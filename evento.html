@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Divisão de gastos</title>
-<script src="config.js?v=3"></script>
+<script src="config.js?v=4"></script>
 <script>window.CENTRAL_PUB={tipo:"evento",c:(new URLSearchParams(location.search).get("c")||"")};</script>
 </head>
 <body>
@@ -747,12 +747,12 @@ var pubTimer=null, pubEnviando=false, pubDepois=false;
 function pubObj(){ return PUB.tipo==="lista"? S.listas[0] : S.eventos[0]; }
 function pubSalvar(){ clearTimeout(pubTimer); pubTimer=setTimeout(pubEnviar,500); }
 function pubEnviar(){ if(pubEnviando){ pubDepois=true; return; } var o=pubObj(); if(!o) return; pubEnviando=true; marcaSalv("Salvando…","on");
-  fetch(window.CENTRAL_API,{method:"POST",body:JSON.stringify({tipo:PUB.tipo,c:PUB.c,obj:PUB.tipo==="lista"?o:o.divisao})}).then(function(r){return r.json();}).then(function(r){
+  fetch(window.CENTRAL_API,{method:"POST",body:JSON.stringify({tipo:PUB.tipo,cod:PUB.c,obj:PUB.tipo==="lista"?o:o.divisao})}).then(function(r){return r.json();}).then(function(r){
     pubEnviando=false; if(r.erro){ marcaSalv(r.erro==="encerrada"?"Esta lista foi encerrada.":"Não salvou: "+r.erro,"err"); return; } if(pubDepois){ pubDepois=false; pubEnviar(); } else marcaSalv("Salvo ✓","ok"); })
   .catch(function(){ pubEnviando=false; marcaSalv("Não salvou (sem internet?). Tentando de novo…","err"); pubTimer=setTimeout(pubEnviar,5000); }); }
 function pubCarregar(primeira){
   if(!primeira&&(pubEnviando||pubTimer&&pubDepois||document.querySelector("#layer .sheet")||ui.lxPend||document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))) return;
-  var etapa="conexão"; fetch(window.CENTRAL_API+"?tipo="+PUB.tipo+"&c="+encodeURIComponent(PUB.c)).then(function(r){ etapa="resposta "+r.status; return r.text(); }).then(function(t){ var r; try{ r=JSON.parse(t); }catch(e){ throw new Error("resposta não é JSON: "+String(t).replace(/<[^>]*>/g," ").replace(/\s+/g," ").slice(0,160)); } etapa="tela";
+  var etapa="conexão"; fetch(window.CENTRAL_API+"?tipo="+PUB.tipo+"&cod="+encodeURIComponent(PUB.c)).then(function(r){ etapa="resposta "+r.status; return r.text(); }).then(function(t){ var r; try{ r=JSON.parse(t); }catch(e){ throw new Error("resposta não é JSON: "+String(t).replace(/<[^>]*>/g," ").replace(/\s+/g," ").slice(0,160)); } etapa="tela";
     if(r.erro){ document.getElementById("app").innerHTML='<div class="empty" style="margin-top:40px">Este link não existe mais ou está errado.<br>Peça um link novo para quem te mandou.</div>'; return; }
     if(PUB.tipo==="lista"){ S.listas=[r.lista]; S.contatos=r.contato?[r.contato]:[]; ui.lid=r.lista.id; }
     else { S.eventos=[r.evento]; S.contatos=r.contato?[r.contato]:[]; ui.evId=r.evento.id; }
